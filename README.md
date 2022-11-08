@@ -1,4 +1,4 @@
-## Topic Modeling
+# Topic Modeling Project
 
-# work log
+## Work Log
 - 
