@@ -13,7 +13,6 @@ pacman::p_load(tidyverse, tidytext, ggplot2, tm, topicmodels)
 
 ```{r}
 imdb <- read.csv("IMDB Dataset.csv")
-
 ```
 
 
