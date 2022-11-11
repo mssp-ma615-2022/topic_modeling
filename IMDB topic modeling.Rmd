@@ -39,3 +39,19 @@ true_sentiment <- imdb %>% select(sentiment) %>% mutate(review_number = row_numb
 tidy_reviews <- reviews %>% unnest_tokens(word, text) 
 ```
 
+```{r}
+## Build tf-idf tibble 
+tidy_reviews_origin <- reviews %>% unnest_tokens(word, text)%>%
+  count(review_number, word, sort = TRUE)
+total_words_origin <- tidy_reviews_origin %>% group_by(review_number) %>%
+  summarize(total = sum(n))
+
+
+reviews_words_origin <- left_join(tidy_reviews_origin, total_words_origin)
+review_tf_idf_origin <- reviews_words_origin %>%
+  bind_tf_idf(word, review_number, n)
+review_tf_idf_origin %>%
+  select(-total) %>%
+  arrange(desc(tf_idf))
+```
+
