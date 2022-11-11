@@ -1,12 +1,15 @@
 ---
 title: "IMDB topic modeling"
 output: pdf_document
+author: "Zhi Tu, Tao Guo, Yalong Wang, Tianjian Xie"
 date: "2022-11-08"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 pacman::p_load(tidyverse, tidytext, ggplot2, tm, topicmodels)
+library(dplyr)
+library(tidytext)
 ```
 
 ## read data
@@ -14,5 +17,7 @@ pacman::p_load(tidyverse, tidytext, ggplot2, tm, topicmodels)
 ```{r}
 imdb <- read.csv("IMDB Dataset.csv")
 ```
+
+
 
 
