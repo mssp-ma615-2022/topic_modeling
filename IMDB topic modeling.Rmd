@@ -8,8 +8,11 @@ date: "2022-11-08"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 pacman::p_load(tidyverse, tidytext, ggplot2, tm, topicmodels)
-library(dplyr)
+library(tidyverse)
 library(tidytext)
+library(ggplot2)
+library(tm)
+library(topicmodels)
 ```
 
 ## read data
@@ -20,6 +23,19 @@ imdb <- read.csv("IMDB Dataset.csv")
 
 
 ```{r warning=FALSE}
+# Dataset separating
+# separate by lines 
+reviews <- imdb %>% 
+  mutate(review_number = row_number()) %>%
+  separate(review,c("1", "2", "3", "4", "5","6"), sep="<br /><br />", convert = TRUE) %>% 
+  pivot_longer(c("1", "2", "3", "4","5","6"), names_to = "lines", names_transform = list(lines = as.integer), values_to = "text") %>%
+  arrange(review_number, lines) %>%
+  relocate(text) %>%
+  tibble()
 
+
+true_sentiment <- imdb %>% select(sentiment) %>% mutate(review_number = row_number()) %>% tibble()
+# separate by words
+tidy_reviews <- reviews %>% unnest_tokens(word, text) 
 ```
 
