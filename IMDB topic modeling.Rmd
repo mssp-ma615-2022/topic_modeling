@@ -21,10 +21,12 @@ library(topicmodels)
 imdb <- read.csv("IMDB Dataset.csv")
 ```
 
+## clean data
 
 ```{r warning=FALSE}
 # Dataset separating
-# separate by lines 
+# separate by html format
+
 reviews <- imdb %>% 
   mutate(review_number = row_number()) %>%
   separate(review,c("1", "2", "3", "4", "5","6"), sep="<br /><br />", convert = TRUE) %>% 
@@ -33,11 +35,35 @@ reviews <- imdb %>%
   relocate(text) %>%
   tibble()
 
-
-true_sentiment <- imdb %>% select(sentiment) %>% mutate(review_number = row_number()) %>% tibble()
 # separate by words
-tidy_reviews <- reviews %>% unnest_tokens(word, text) 
+
+tidy_reviews <- reviews %>% 
+  unnest_tokens(word, text) 
 ```
+
+# building stop words
+
+```{r}
+# custom stop words
+data(stop_words)
+custom_stop_words <- bind_rows(tibble(word = c("movie", "film", "movies", "time","story","plot","films","director","watch","characters", "watching","watched", "scenes", "tv","scene","series", "found","fan","lot","dvd","book","2","minutes","read","feel","makes","sense","script","based","genre","cast","role","performance","john","played","play","actors","character","production","bit","line","main","excellent","wonderful","called","10","1","remember","version","half","episode","ago","worst","budget","low","special","actor","michael","playing","set","3","heard","reviews","boring","idea","absolutely","NA","nice","screen","directed","plays","released","james","robert","david","top","actress","acting","completely","stupid","original","roles","picture","audience", "viewer","supporting","recommend"), 
+                                      lexicon = c("custom")), 
+                               stop_words)
+
+# words removed stop words
+tidy_reviews <- tidy_reviews %>%
+  drop_na %>%
+  anti_join(custom_stop_words)
+```
+
+# checking for top frequent words
+
+```{r}
+tidy_reviews %>%
+  count(word, sort = TRUE)
+```
+
+# Build tf-idf tibble 
 
 ```{r}
 ## Build tf-idf tibble 
@@ -46,7 +72,6 @@ tidy_reviews_origin <- reviews %>% unnest_tokens(word, text)%>%
 total_words_origin <- tidy_reviews_origin %>% group_by(review_number) %>%
   summarize(total = sum(n))
 
-
 reviews_words_origin <- left_join(tidy_reviews_origin, total_words_origin)
 review_tf_idf_origin <- reviews_words_origin %>%
   bind_tf_idf(word, review_number, n)
@@ -54,4 +79,22 @@ review_tf_idf_origin %>%
   select(-total) %>%
   arrange(desc(tf_idf))
 ```
+
+# LDA
+
+```{r}
+# transfer tidy words to dtm form
+review_dtm <- tidy_reviews %>% select(-sentiment,-lines) %>% 
+  group_by(review_number) %>% count(word) %>% arrange(review_number,desc(n)) %>%
+  cast_dtm(review_number, word,n)
+```
+
+```{r}
+# LDA to separate to 8 topics
+review_lda <- LDA(review_dtm, k=8,method = "Gibbs", control = list(seed = 1234))
+review_lda
+```
+
+
+
 
