@@ -90,10 +90,84 @@ review_dtm <- tidy_reviews %>% select(-sentiment,-lines) %>%
 ```
 
 ```{r}
-# LDA to separate to 8 topics
-review_lda <- LDA(review_dtm, k=8,method = "Gibbs", control = list(seed = 1234))
+# find proper number of topics
+result <- ldatuning::FindTopicsNumber(
+  review_dtm,
+  topics = seq(from = 6, to = 20, by = 1),
+  metrics = c("CaoJuan2009",  "Deveaud2014"),
+  method = "Gibbs",
+  control = list(seed = 77),
+  verbose = TRUE
+)
+```
+
+```{r}
+# plot the graph of performance of different numbers of topics
+ldatuning::FindTopicsNumber_plot(result)
+```
+
+
+```{r}
+# LDA to separate to 15 topics
+review_lda <- LDA(review_dtm, k=15,method = "Gibbs", control = list(seed = 1234))
 review_lda
 ```
+
+```{r}
+# result of posterior distributions
+tmResult <- posterior(review_lda)
+# show the probability of each review on all 15 topics
+theta <- tmResult$topics
+# show the probability of each words on all 15 topics
+beta <- tmResult$terms
+```
+
+
+```{r}
+# rank top topic terms for topic names
+topicNames1 <- apply(lda::top.topic.words(beta, 5, by.score = T), 2, paste, collapse = " ")
+
+# most probable topics in the collection
+topicProportions <- colSums(theta) / nDocs(review_dtm)  # mean probabilities over all paragraphs
+names(topicProportions) <- topicNames     # assign the topic names we created before
+sort(topicProportions, decreasing = TRUE) # show summed proportions in decreased order
+```
+
+
+```{r}
+countsOfPrimaryTopics <- rep(0, 15)
+names(countsOfPrimaryTopics) <- topicNames
+for (i in 1:nDocs(review_dtm)) {
+  topicsPerDoc <- theta[i, ] # select topic distribution for document i
+  # get first element position from ordered list
+  primaryTopic <- order(topicsPerDoc, decreasing = TRUE)[1] 
+  countsOfPrimaryTopics[primaryTopic] <- countsOfPrimaryTopics[primaryTopic] + 1
+}
+
+counts <- data.frame(names(countsOfPrimaryTopics),countsOfPrimaryTopics)
+counts <- counts %>% rename(class=names.countsOfPrimaryTopics., 
+                            count=countsOfPrimaryTopics) %>%
+  arrange(desc(count))
+ggplot(aes(x=reorder(class,count), y=count),data=counts)+
+  geom_bar(stat="identity") +
+  coord_flip()
+
+
+```
+
+```{r}
+# assign each document of topic with the highest probability
+imdb_classed <- imdb
+for (i in 1:nDocs(review_dtm)) {
+  max_index <- which.max(theta[i, ])[[1]] # select topic distribution for document i
+  # get first element position from ordered list
+  imdb_classed$category[i] <- topicNames[max_index]
+}
+```
+
+
+
+
 
 
 
