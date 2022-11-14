@@ -145,6 +145,8 @@ for (i in 1:nDocs(review_dtm)) {
 }
 
 counts <- data.frame(names(countsOfPrimaryTopics),countsOfPrimaryTopics)
+
+# graph of most popular topics
 counts <- counts %>% rename(class=names.countsOfPrimaryTopics., 
                             count=countsOfPrimaryTopics) %>%
   arrange(desc(count))
