@@ -6,3 +6,4 @@
 - make a tf-idf tibble for word frequency and word rank 
 - add stop words
 - inital lda topic modeling
+- upload film types' barplot
