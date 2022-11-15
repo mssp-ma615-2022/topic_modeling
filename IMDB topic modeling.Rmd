@@ -125,7 +125,7 @@ beta <- tmResult$terms
 
 ```{r}
 # rank top topic terms for topic names
-topicNames1 <- apply(lda::top.topic.words(beta, 5, by.score = T), 2, paste, collapse = " ")
+topicNames <- apply(lda::top.topic.words(beta, 5, by.score = T), 2, paste, collapse = " ")
 
 # most probable topics in the collection
 topicProportions <- colSums(theta) / nDocs(review_dtm)  # mean probabilities over all paragraphs
@@ -136,7 +136,8 @@ sort(topicProportions, decreasing = TRUE) # show summed proportions in decreased
 
 ```{r}
 countsOfPrimaryTopics <- rep(0, 15)
-names(countsOfPrimaryTopics) <- topicNames
+New_topicNames <- c('Villian','Horror','Comedy','Oscar','Family','Arts','History','Sitcom','Crime','kids','Sciences','Dialogue','Musicals','Action','Female')
+names(countsOfPrimaryTopics) <- New_topicNames
 for (i in 1:nDocs(review_dtm)) {
   topicsPerDoc <- theta[i, ] # select topic distribution for document i
   # get first element position from ordered list
@@ -150,10 +151,11 @@ counts <- data.frame(names(countsOfPrimaryTopics),countsOfPrimaryTopics)
 counts <- counts %>% rename(class=names.countsOfPrimaryTopics., 
                             count=countsOfPrimaryTopics) %>%
   arrange(desc(count))
-ggplot(aes(x=reorder(class,count), y=count),data=counts)+
-  geom_bar(stat="identity") +
-  coord_flip()
-
+ggplot(counts) +
+  aes(x = class, y = count) +
+  geom_col(fill = "#228B22") +
+  labs(x = "film types", y = "counts") +
+  theme_minimal()
 
 ```
 
@@ -164,6 +166,7 @@ for (i in 1:nDocs(review_dtm)) {
   max_index <- which.max(theta[i, ])[[1]] # select topic distribution for document i
   # get first element position from ordered list
   imdb_classed$category[i] <- topicNames[max_index]
+  imdb_classed$class[i] <- New_topicNames[max_index]
 }
 ```
 
