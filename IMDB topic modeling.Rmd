@@ -15,13 +15,13 @@ library(tm)
 library(topicmodels)
 ```
 
-## read data
+## Read data
 
 ```{r}
 imdb <- read.csv("IMDB Dataset.csv")
 ```
 
-## clean data
+## Clean data
 
 ```{r warning=FALSE}
 # Dataset separating
@@ -41,7 +41,7 @@ tidy_reviews <- reviews %>%
   unnest_tokens(word, text) 
 ```
 
-# building stop words
+# Building stop words
 
 ```{r}
 # custom stop words
@@ -56,7 +56,7 @@ tidy_reviews <- tidy_reviews %>%
   anti_join(custom_stop_words)
 ```
 
-# checking for top frequent words
+# Checking for top frequent words
 
 ```{r}
 tidy_reviews %>%
@@ -136,8 +136,7 @@ sort(topicProportions, decreasing = TRUE) # show summed proportions in decreased
 
 ```{r}
 countsOfPrimaryTopics <- rep(0, 15)
-New_topicNames <- c('Villian','Horror','Comedy','Oscar','Family','Arts','History','Sitcom','Crime','kids','Sciences','Dialogue','Musicals','Action','Female')
-names(countsOfPrimaryTopics) <- New_topicNames
+names(countsOfPrimaryTopics) <- topicNames
 for (i in 1:nDocs(review_dtm)) {
   topicsPerDoc <- theta[i, ] # select topic distribution for document i
   # get first element position from ordered list
@@ -152,24 +151,31 @@ counts <- counts %>% rename(class=names.countsOfPrimaryTopics.,
                             count=countsOfPrimaryTopics) %>%
   arrange(desc(count))
 ggplot(counts) +
-  aes(x = class, y = count) +
+  aes(x = reorder(class,count), y = count) +
   geom_col(fill = "#228B22") +
-  labs(x = "film types", y = "counts") +
-  theme_minimal()
+  labs(x = "film types by top frequent words", y = "counts", title="Counts of film types by top frequent words") +
+  theme_minimal() +
+  coord_flip()
 
 ```
 
 ```{r}
-# assign each document of topic with the highest probability
+# assign each document of topic with the top frequent words and assign film types to each review
 imdb_classed <- imdb
+New_topicNames <- c('Family','Villian','Crime','Kids','Comedy','Horror','Action','Oscar','History','Female','Arts','Sitcom','Sci-fi','Dialogue','Musicals')
 for (i in 1:nDocs(review_dtm)) {
   max_index <- which.max(theta[i, ])[[1]] # select topic distribution for document i
   # get first element position from ordered list
-  imdb_classed$category[i] <- topicNames[max_index]
+  imdb_classed$top_words[i] <- topicNames[max_index]
   imdb_classed$class[i] <- New_topicNames[max_index]
 }
+head(imdb_classed)
 ```
 
+```{r}
+write.csv(x = imdb_classed, file = "imdb_classed.csv")
+
+```
 
 
 
