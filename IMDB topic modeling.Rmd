@@ -165,9 +165,15 @@ imdb_classed <- imdb
 New_topicNames <- c('Family','Villian','Crime','Kids','Comedy','Horror','Action','Oscar','History','Female','Arts','Sitcom','Sci-fi','Dialogue','Musicals')
 for (i in 1:nDocs(review_dtm)) {
   max_index <- which.max(theta[i, ])[[1]] # select topic distribution for document i
+  index <- head(sort(theta[i,],decreasing = T), 3)
   # get first element position from ordered list
   imdb_classed$top_words[i] <- topicNames[max_index]
-  imdb_classed$class[i] <- New_topicNames[max_index]
+  imdb_classed$first_class[i] <- New_topicNames[as.numeric(names(index[1]))]
+  imdb_classed$first_prob[i] <- index[[1]]
+  imdb_classed$second_class[i] <- New_topicNames[as.numeric(names(index[2]))]
+  imdb_classed$second_prob[i] <- index[[2]]
+  imdb_classed$third_class[i] <- New_topicNames[as.numeric(names(index[3]))]
+  imdb_classed$third_prob[i] <- index[[3]]
 }
 head(imdb_classed)
 ```
